@@ -1,30 +1,67 @@
 import asyncio
+import threading
 import struct
 from bleak import BleakScanner
 from bleak import BleakClient
+from time import sleep
 
 address = "D166A5CD-7A51-51FF-77D1-9C87BFB6DBE6"
 ROLL_UUID = "c24def16-a665-4da1-b87a-6706b03eb108"
 PITCH_UUID = "c24def16-a665-4da1-b87a-6706b03eb109"
 
-async def read_pose_data(address: str, roll_uuid: str, pitch_uuid: str):
+pose_data = {"roll":None,"pitch":None}
+lock = threading.Lock()
+
+
+def roll_callback(sender:int,data:bytearray):
+    roll = struct.unpack('<f',data)[0]
+    pose_data["roll"] = roll
+    print(f"Roll: {roll:.2f}")
+
+def pitch_callback(sender:int,data:bytearray):
+    pitch = struct.unpack('<f',data)[0]
+    pose_data["pitch"] = pitch
+    print(f"Pitch: {pitch:.2f}")
+
+async def main():
     async with BleakClient(address) as client:
         if not client.is_connected:
             print("Failed to connect.")
-            return None
+            return
+        await client.start_notify(ROLL_UUID,roll_callback)
+        await client.start_notify(PITCH_UUID,pitch_callback)
+        print("Listening for notifications... Press Ctrl+C to stop.")
+        while True:
+            await asyncio.sleep(1)  # Keep the program alive
 
-        # Read raw bytes from the BLE characteristics
-        roll_raw = await client.read_gatt_char(roll_uuid)
-        pitch_raw = await client.read_gatt_char(pitch_uuid)
+if __name__ == "__main__":
+    asyncio.run(main())
 
-        # Unpack bytes into float values (assuming little-endian float format)
-        roll = struct.unpack('<f', roll_raw)[0]
-        pitch = struct.unpack('<f', pitch_raw)[0]
+# async def read_pose_data():
+#     async with BleakClient(address) as client:
+#         if not client.is_connected:
+#             print("Failed to connect.")
+#             return
+#         while True:
+#             try:
+#                 # Read raw bytes from the BLE characteristics
+#                 roll_raw = await client.read_gatt_char(ROLL_UUID)
+#                 pitch_raw = await client.read_gatt_char(PITCH_UUID)
 
-        return roll, pitch
+#                 # Unpack bytes into float values (assuming little-endian float format)
+#                 roll = struct.unpack('<f', roll_raw)[0]
+#                 pitch = struct.unpack('<f', pitch_raw)[0]
+#                 with lock:
+#                     pose_data["roll"] = roll
+#                     pose_data["pitch"] = pitch
+#             except Exception as e:
+#                 print("Error reading pose data: ",e)
 
-roll,pitch = asyncio.run(read_pose_data(address,ROLL_UUID,PITCH_UUID))
-print(roll,pitch)
-
+#         return roll, pitch
+    
+# while True:
+#     roll,pitch = asyncio.run(read_pose_data(address,ROLL_UUID,PITCH_UUID))
+#     print(roll,pitch)
+#     sleep(0.1)
 
 # D166A5CD-7A51-51FF-77D1-9C87BFB6DBE6
