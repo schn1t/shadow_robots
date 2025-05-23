@@ -8,7 +8,7 @@ address = "D166A5CD-7A51-51FF-77D1-9C87BFB6DBE6"
 ROLL_UUID = "c24def16-a665-4da1-b87a-6706b03eb108"
 PITCH_UUID = "c24def16-a665-4da1-b87a-6706b03eb109"
 
-pose_data = {"roll":None,"pitch":None}
+pose_data = {"roll":0,"pitch":0}
 lock = threading.Lock()
 
 
