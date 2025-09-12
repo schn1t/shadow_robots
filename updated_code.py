@@ -19,7 +19,7 @@ joint_handles = [sim.getObject(joint) for joint in joint_names]
 # Initial pose
 pos = [-0.2, -0.2, 0.4]
 rot = [0, 0, np.deg2rad(90)]
-
+ 
 # Constants for UR5
 a_dim = [0, 0.4251, 0.39215, 0, 0, 0]
 d_dim = [0, 0, 0, 0.110, 0.09475, 0]
