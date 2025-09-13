@@ -103,7 +103,7 @@ for name in rotation:
 
 # Start updating joint angles
 root.after(100, update_joint_angles)
-root.mainloop()
+root.mainloop() 
 
 # Stop simulation
 sim.stopSimulation()
